@@ -213,7 +213,7 @@ class Client:
 
         meta_data_unpacked = dict(zip(AIMPRemoteAccessPackFormat.keys(), struct.unpack(pack_format, meta_data_raw)))
 
-        track_data = mapped_file.read(mapped_file.size() - mapped_file.tell()).decode('utf-16').replace('\x00', '')
+        track_data = mapped_file.read(mapped_file.size() - mapped_file.tell()).decode("utf-16-le").replace('\x00', '').encode("utf-16-le")
 
         mapped_file.close()
 
@@ -227,13 +227,13 @@ class Client:
             'sample_rate': meta_data_unpacked['SampleRate']
         }
 
-        with io.StringIO(track_data) as s:
-            ret['album'] = s.read(meta_data_unpacked['AlbumLength'])
-            ret['artist'] = s.read(meta_data_unpacked['ArtistLength'])
-            ret['year'] = s.read(meta_data_unpacked['DateLength'])
-            ret['filename'] = s.read(meta_data_unpacked['FileNameLength'])
-            ret['genre'] = s.read(meta_data_unpacked['GenreLength'])
-            ret['title'] = s.read(meta_data_unpacked['TitleLength'])
+        with io.BytesIO(track_data) as s:
+            ret['album'] = s.read(meta_data_unpacked['AlbumLength']*2).decode("utf-16-le")
+            ret['artist'] = s.read(meta_data_unpacked['ArtistLength']*2).decode("utf-16-le")
+            ret['year'] = s.read(meta_data_unpacked['DateLength']*2).decode("utf-16-le")
+            ret['filename'] = s.read(meta_data_unpacked['FileNameLength']*2).decode("utf-16-le")
+            ret['genre'] = s.read(meta_data_unpacked['GenreLength']*2).decode("utf-16-le")
+            ret['title'] = s.read(meta_data_unpacked['TitleLength']*2).decode("utf-16-le")
 
         return ret
 
